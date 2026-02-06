@@ -1,0 +1,29 @@
+name: Build Custom UniDock Image
+on: [push]
+
+jobs:
+  build-sif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Singularity
+        uses: eitchnet/setup-singularity@v1.6.0
+        with:
+          singularity-version: 3.8.3
+
+      - name: Create Definition File
+        run: |
+          cat > Singularity.def <<EOF
+          Bootstrap: docker
+          From: ubuntu:22.04
+          %post
+              apt-get update && apt-get install -y libgomp1 libstdc++6
+          EOF
+
+      - name: Build SIF
+        run: singularity build unidock_final.sif Singularity.def
+
+      - name: Upload SIF
+        uses: actions/upload-artifact@v4
+        with:
+          name: unidock_final_image
+          path: unidock_final.sif
