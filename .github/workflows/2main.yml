@@ -1,0 +1,30 @@
+name: Build SIF via Docker
+on: [push]
+
+jobs:
+  build-sif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and Prepare Image
+        run: |
+          # 在 Docker 中安装缺失的库，并保存为 tar 包
+          docker run --name temp_container ubuntu:22.04 /bin/bash -c "apt-get update && apt-get install -y libgomp1 libstdc++6"
+          docker commit temp_container unidock_ready
+          docker save -o unidock_ready.tar unidock_ready
+
+      - name: Install Singularity
+        run: |
+          # 手动在虚拟机里装一次 Singularity (无需插件)
+          sudo apt-get update
+          sudo apt-get install -y singularity-container
+
+      - name: Convert Docker to SIF
+        run: |
+          # 将 tar 包转化为 SIF 镜像
+          singularity build unidock_final.sif docker-archive://unidock_ready.tar
+
+      - name: Upload SIF
+        uses: actions/upload-artifact@v4
+        with:
+          name: unidock_final_image
+          path: unidock_final.sif
