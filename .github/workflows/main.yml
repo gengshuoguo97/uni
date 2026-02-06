@@ -5,10 +5,13 @@ jobs:
   build-sif:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Install Singularity
-        uses: eitchnet/setup-singularity@v1.6.0
+        uses: sylabs/setup-singularity@v1
         with:
-          singularity-version: 3.8.3
+          singularity-version: 3.11.0  # 与北大集群版本接近
 
       - name: Create Definition File
         run: |
